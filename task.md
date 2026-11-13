@@ -1,0 +1,29 @@
+# Task List: Redesign & Modular Refactor HRIS
+
+- `[x]` **Phase 1: Penghapusan Modul Lama (Recruitment & Sisa Fitur)**
+  - `[x]` Hapus tabel, migration, dan model terkait Recruitment (JobOpening, Candidate, Interview, TalentPool, dll).
+  - `[x]` Hapus Controller, Service, dan routing terkait Recruitment.
+  - `[x]` Bersihkan relasi, policy, dan permission dari entitas yang dihapus.
+- `[/]` **Phase 2: Arsitektur Modular Backend**
+  - `[/]` Buat struktur direktori `app/Modules`.
+  - `[ ]` Pindahkan & sesuaikan *namespace* modul *Core* (Auth, User, Employee, Organization).
+  - `[ ]` Pindahkan modul Operasional (Attendance, Leave, Overtime).
+  - `[ ]` Pindahkan modul Kompensasi (Payroll, Reimbursement).
+  - `[ ]` Pindahkan modul Performance & Development (KPI, Performance, Training, Competency, Asset).
+  - `[ ]` Pindahkan modul Administrasi & Sistem (Approval, Notification, Report, Admin).
+  - `[ ]` Konfigurasi `RouteServiceProvider` atau sistem load untuk *routing* per modul.
+- `[ ]` **Phase 3: Dynamic Approval Engine**
+  - `[ ]` Buat *migrations* & *models* (`approval_flows`, `approval_steps`, `approval_requests`, `approval_histories`).
+  - `[ ]` Buat `ApprovalFlowResolver` & `ApproverResolver`.
+  - `[ ]` Bangun `ApprovalService` inti.
+  - `[ ]` Hubungkan *event listeners* untuk aksi pasca-approval (contoh: potong cuti, publish payroll).
+  - `[ ]` Ubah layanan modul lain (Leave, Overtime, dll) agar mengonsumsi *Approval Engine* baru.
+- `[ ]` **Phase 4: RBAC & Security Update**
+  - `[ ]` Standarisasi *roles* (`super_admin`, `hr_admin`, `finance`, `manager`, `employee`).
+  - `[ ]` Update format *permissions* (`module.action`).
+  - `[ ]` Implementasi *Middleware/Policy* yang merata di semua *endpoint* Modular.
+- `[ ]` **Phase 5: Persiapan Redesign Frontend**
+  - `[ ]` *Pending*: Integrasi dengan `hris-frontend` untuk mendesain ulang arsitektur warna, rute, dan UI.
+- `[ ]` **Phase 6: Verifikasi**
+  - `[ ]` Jalankan tes optimasi dan rute (`php artisan optimize:clear`).
+  - `[ ]` Tes end-to-end simulasi *Dynamic Approval*.
