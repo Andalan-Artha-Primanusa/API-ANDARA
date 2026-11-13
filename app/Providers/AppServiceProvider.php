@@ -17,6 +17,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Recent pdo_sqlsrv builds reject Laravel's default
+        // PDO::ATTR_STRINGIFY_FETCHES option. Use a connector with only
+        // attributes supported by SQL Server.
+        $this->app->bind('db.connector.sqlsrv', function () {
+            return new \App\Database\Connectors\SqlServerConnector;
+        });
+
         // Binding Repository ke Interface
         $this->app->bind(
             UserRepositoryInterface::class,
