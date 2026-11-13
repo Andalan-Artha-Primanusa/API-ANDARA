@@ -74,10 +74,7 @@ Route::post('tax/progressive/calculate', function (\Illuminate\Http\Request $req
 */
 
 Route::get('/', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'API HRIS aktif 🚀'
-    ]);
+    return response()->view('api-status');
 });
 // ...existing use statements...
 // Surat Pengalaman Kerja & Surat Keterangan Bekerja

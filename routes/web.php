@@ -8,10 +8,7 @@ use Illuminate\Support\Facades\Response;
 
 
 Route::get('/', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'API HRIS aktif 🚀'
-    ]);
+    return view('api-status');
 });
 
 Route::get('/login', function () {
