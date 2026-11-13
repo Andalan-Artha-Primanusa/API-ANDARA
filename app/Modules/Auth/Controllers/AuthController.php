@@ -120,8 +120,17 @@ class AuthController extends Controller
         } catch (ValidationException $e) {
             return ApiResponse::error('Validation failed', $e->errors(), 422);
         } catch (\Throwable $e) {
-            Log::error('Login failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return ApiResponse::error('Login failed (DEBUG)', $e->getMessage() . ' | Line: ' . $e->getLine() . ' | File: ' . $e->getFile(), 500);
+            // Never expose filesystem paths, SQL details, or stack traces from
+            // an authentication endpoint. Logging remains best-effort so a
+            // broken storage/logs permission does not create a second error.
+            try {
+                Log::error('Login failed', ['message' => $e->getMessage()]);
+            } catch (\Throwable) {
+                // The production error response must remain safe even when
+                // the configured log channel is temporarily unavailable.
+            }
+
+            return ApiResponse::error('Login gagal. Silakan coba lagi.', null, 500);
         }
     }
 
