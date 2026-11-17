@@ -212,8 +212,9 @@ Route::get('/presentation/menus', function () {
     ];
 
       // Presentation mode only exposes routes backed by the legacy SQL Server bridge.
-      $menus = collect(\App\Constants\MenuRegistry::all())
-        ->filter(fn (array $menu) => in_array($menu['path'], [
+      // Keep this endpoint independent from database/permission services so the login shell
+      // can still render when the legacy bridge is unavailable.
+      $allowedPaths = [
             '/dashboard',
             '/employees',
             '/reimbursements',
@@ -223,7 +224,9 @@ Route::get('/presentation/menus', function () {
             '/attendance/monitoring',
             '/attendance/check-in',
             '/attendance/check-out',
-        ], true));
+        ];
+      $menus = collect(\App\Constants\MenuRegistry::all())
+        ->filter(fn (array $menu) => in_array($menu['path'] ?? null, $allowedPaths, true));
 
     return \App\Helpers\ApiResponse::success(
         'Presentation menus',

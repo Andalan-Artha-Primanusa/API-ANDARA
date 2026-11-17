@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AndalanWorkforceController extends Controller
 {
@@ -554,6 +555,9 @@ class AndalanWorkforceController extends Controller
     public function adminDocuments(string $user): JsonResponse
     {
         if (!$this->workforceAdminAccount($user)) return ApiResponse::error('Akses khusus admin workforce.', null, 403);
+        if (!Schema::hasTable('andalan_documents')) {
+            return ApiResponse::success('ANDALAN admin documents', []);
+        }
         return ApiResponse::success('ANDALAN admin documents', DB::table('andalan_documents')->orderByDesc('issued_at')->orderByDesc('id')->limit(500)->get());
     }
 
