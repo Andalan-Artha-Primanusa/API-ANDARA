@@ -116,6 +116,21 @@ $query = AssignmentLetter::with(['user.profile', 'approvalFlow.steps.role']);
         }
     }
 
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $letter = AssignmentLetter::findOrFail($id);
+        if ($letter->status !== 'pending' || !$request->user()->hasPermission('assignment_letter.create')) {
+            return ApiResponse::error('Surat tugas tidak dapat diedit', null, 400);
+        }
+        $data = $request->validate([
+            'title' => 'required|string|max:255', 'description' => 'nullable|string',
+            'start_date' => 'required|date', 'end_date' => 'required|date|after_or_equal:start_date',
+            'location' => 'nullable|string|max:255',
+        ]);
+        $letter->update($data);
+        return ApiResponse::success('Assignment letter updated', $letter->fresh());
+    }
+
     public function approve(Request $request, int $id): JsonResponse
     {
         try {

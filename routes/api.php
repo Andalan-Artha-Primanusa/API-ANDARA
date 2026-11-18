@@ -11,8 +11,6 @@ use App\Modules\Auth\Controllers\GoogleAuthController;
 use App\Modules\Employee\Controllers\UserProfileController;
 use App\Modules\Employee\Controllers\EmployeeController;
 use App\Modules\Attendance\Controllers\AttendanceController;
-use App\Modules\Attendance\Controllers\QrAttendanceController;
-use App\Modules\Attendance\Controllers\SecurityPatrolController;
 use App\Modules\Leave\Controllers\LeaveController;
 use App\Modules\Performance\Controllers\KpiController;
 use App\Modules\Reimbursement\Controllers\ReimbursementController;
@@ -276,6 +274,7 @@ Route::middleware(['auth:sanctum', 'audit.trail'])->group(function () {
     Route::get('assignment-letters', [AssignmentLetterController::class, 'index']);
     Route::post('assignment-letters', [AssignmentLetterController::class, 'store']);
     Route::get('assignment-letters/{id}', [AssignmentLetterController::class, 'show']);
+    Route::put('assignment-letters/{id}', [AssignmentLetterController::class, 'update']);
     Route::match(['post', 'put'], 'assignment-letters/{id}/approve', [AssignmentLetterController::class, 'approve']);
     Route::match(['post', 'put'], 'assignment-letters/{id}/reject', [AssignmentLetterController::class, 'reject']);
     Route::get('assignment-letters/{id}/pdf', [AssignmentLetterController::class, 'generatePdf']);
@@ -423,10 +422,6 @@ Route::middleware('auth:sanctum')->prefix('approval-history')->group(function ()
         Route::get('/locations', [LocationController::class, 'activeLocations']);
         Route::post('/check-in', [AttendanceController::class, 'checkIn']);
         Route::post('/check-out', [AttendanceController::class, 'checkOut']);
-        Route::post('/qr/generate', [QrAttendanceController::class, 'generate']);
-        Route::post('/qr/validate', [QrAttendanceController::class, 'validateToken']);
-        Route::post('/qr/check-in', [QrAttendanceController::class, 'checkIn']);
-        Route::post('/qr/check-out', [QrAttendanceController::class, 'checkOut']);
         Route::get('/history', [AttendanceController::class, 'history']);
         Route::get('/today', [AttendanceController::class, 'today']);
         Route::get('/intelligence', [AttendanceController::class, 'intelligence']);
@@ -439,16 +434,6 @@ Route::middleware('auth:sanctum')->prefix('approval-history')->group(function ()
             Route::get('/{id}', [AttendanceController::class, 'show'])->whereNumber('id');
             Route::delete('/{id}', [AttendanceController::class, 'destroy'])->whereNumber('id');
         });
-    });
-
-    Route::middleware('role:*')->prefix('patrol')->group(function () {
-        Route::get('/checkpoints', [SecurityPatrolController::class, 'checkpoints']);
-        Route::post('/checkpoints', [SecurityPatrolController::class, 'storeCheckpoint']);
-        Route::put('/checkpoints/{id}', [SecurityPatrolController::class, 'updateCheckpoint'])->whereNumber('id');
-        Route::delete('/checkpoints/{id}', [SecurityPatrolController::class, 'destroyCheckpoint'])->whereNumber('id');
-        Route::post('/checkpoints/{id}/regenerate-qr', [SecurityPatrolController::class, 'regenerateQr'])->whereNumber('id');
-        Route::post('/scan', [SecurityPatrolController::class, 'scan']);
-        Route::get('/scans', [SecurityPatrolController::class, 'scans']);
     });
 
     // MANAGER / HR / ADMIN (Role based grouped endpoints)
@@ -554,6 +539,8 @@ Route::middleware('auth:sanctum')->prefix('approval-history')->group(function ()
             Route::get('/', [AssetController::class, 'index']);
             Route::post('/', [AssetController::class, 'store']);
             Route::get('/assignments', [AssetController::class, 'assignments']);
+        Route::get('/scan/{code}', [AssetController::class, 'scanByCode']);
+        Route::get('/{id}/audit-history', [AssetController::class, 'auditHistory']);
             Route::get('/{id}', [AssetController::class, 'show']);
             Route::put('/{id}', [AssetController::class, 'update']);
             Route::delete('/{id}', [AssetController::class, 'destroy']);
@@ -578,6 +565,7 @@ Route::middleware('auth:sanctum')->prefix('approval-history')->group(function ()
 
         Route::prefix('benefits')->group(function () {
             Route::get('/', [BenefitController::class, 'index']);
+        Route::get('/assignments', [BenefitController::class, 'assignments']);
             Route::post('/', [BenefitController::class, 'store']);
             Route::get('/employee/{employeeId}', [BenefitController::class, 'employeeBenefits']);
             Route::get('/{id}', [BenefitController::class, 'show']);

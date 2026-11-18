@@ -183,6 +183,21 @@ class BenefitController extends Controller
         ]), 201);
     }
 
+    public function assignments(Request $request): JsonResponse
+    {
+        if (!$request->user()->hasPermission('benefit.view')) {
+            return ApiResponse::error('Forbidden', 'No permission', 403);
+        }
+        $items = EmployeeBenefit::with(['benefit', 'employee.user:id,name,email', 'assigner:id,name,email', 'approvalFlow.steps.role', 'approvalFlow.steps.user'])
+            ->latest()->paginate($request->integer('per_page', 20));
+        $service = app(ApprovalFlowService::class);
+        $items->getCollection()->transform(function ($item) use ($service, $request) {
+            $item->can_act = $service->canUserAct($item, $request->user());
+            return $item;
+        });
+        return ApiResponse::success('Benefit assignments retrieved successfully', $items);
+    }
+
     public function approveBenefitAssignment(Request $request, int $assignmentId): JsonResponse
     {
         $this->authorizeManage($request, 'benefit.assign');

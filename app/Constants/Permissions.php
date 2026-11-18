@@ -40,16 +40,7 @@ class Permissions
         'attendance.check_in' => 'Employee check-in',
         'attendance.check_out' => 'Employee check-out',
         'attendance.view_own' => 'View own attendance history',
-        'attendance.qr.generate' => 'Generate QR attendance token',
-        'attendance.qr.scan' => 'Scan QR for attendance',
         'attendance.manual_adjust' => 'Manual attendance adjustment',
-    ];
-
-    const PATROL = [
-        'patrol.scan' => 'Scan security patrol checkpoints',
-        'patrol.view' => 'View security patrol checkpoints and scans',
-        'patrol.manage' => 'Manage security patrol checkpoints',
-        'patrol.report' => 'View security patrol reports',
     ];
 
     const PAYROLL = [

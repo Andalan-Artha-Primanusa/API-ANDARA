@@ -518,5 +518,47 @@ class AssetController extends Controller
 
         return ApiResponse::success('My assets retrieved successfully', $assignments);
     }
+
+    public function scanByCode(Request $request, string $code): JsonResponse
+    {
+        if (!$request->user()->hasPermission('asset.view')) {
+            return ApiResponse::error('Forbidden', 'No permission', 403);
+        }
+
+        $query = InventoryAsset::with([
+            'assignments.employee.user:id,name,email',
+            'assignments.employee.department:id,name',
+            'assignments.employee.position:id,name',
+            'assignments.assignedBy:id,name,email',
+        ])->where('code', $code);
+        app(CompanyScopeService::class)->applyEmployeeScope($query, $request);
+        $asset = $query->first();
+
+        return $asset
+            ? ApiResponse::success('Asset QR scanned', $asset)
+            : ApiResponse::error('Asset not found', null, 404);
+    }
+
+    public function auditHistory(Request $request, int $id): JsonResponse
+    {
+        if (!$request->user()->hasPermission('asset.view')) {
+            return ApiResponse::error('Forbidden', 'No permission', 403);
+        }
+
+        $query = InventoryAsset::query();
+        app(CompanyScopeService::class)->applyEmployeeScope($query, $request);
+        $asset = $query->find($id);
+        if (!$asset) return ApiResponse::error('Asset not found', null, 404);
+
+        $history = InventoryAssetAssignment::with([
+            'employee.user:id,name,email',
+            'assignedBy:id,name,email',
+        ])->where('asset_id', $id)->latest()->get();
+
+        return ApiResponse::success('Asset audit history', [
+            'asset' => $asset,
+            'assignments' => $history,
+        ]);
+    }
 }
 
