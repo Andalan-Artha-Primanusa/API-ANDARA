@@ -319,6 +319,18 @@ class AndalanWorkforceController extends Controller
         return ApiResponse::success('Asset berhasil dihapus.');
     }
 
+    public function assignSuperAdminAsset(Request $request, int $assetId): JsonResponse
+    {
+        $validated = $request->validate(['user_id' => ['required', 'string', 'max:255'], 'target_user_id' => ['required', 'string', 'max:255'], 'notes' => ['nullable', 'string', 'max:2000']]);
+        if (!$this->superAdminAccount($validated['user_id'])) return ApiResponse::error('Akses khusus Super Admin.', null, 403);
+        $identity = $this->identity($validated['target_user_id']);
+        $asset = DB::table('andalan_assets')->where('id', $assetId)->where('status', 'available')->first();
+        if (!$identity) return ApiResponse::error('Target user not found', null, 404);
+        if (!$asset) return ApiResponse::error('Asset tidak tersedia', null, 404);
+        $id = DB::table('andalan_asset_assignments')->insertGetId(['asset_id' => $assetId, 'employee_id' => $identity['employee_id'], 'salary_number' => $identity['salary_number'], 'employee_name' => $identity['employee_name'], 'status' => 'requested', 'notes' => $validated['notes'] ?? null, 'created_at' => now(), 'updated_at' => now()]);
+        return ApiResponse::success('Assignment asset berhasil dibuat', DB::table('andalan_asset_assignments')->find($id), 201);
+    }
+
     public function scanSuperAdminAsset(string $user, string $assetCode): JsonResponse
     {
         if (!$this->superAdminAccount($user)) {
