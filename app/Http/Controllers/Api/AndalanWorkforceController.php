@@ -307,6 +307,18 @@ class AndalanWorkforceController extends Controller
         ], 201);
     }
 
+    public function deleteSuperAdminAsset(Request $request, int $id): JsonResponse
+    {
+        $userId = (string) $request->input('user_id', $request->user()?->id);
+        if (!$this->superAdminAccount($userId)) return ApiResponse::error('Akses khusus Super Admin.', null, 403);
+        $asset = DB::table('andalan_assets')->where('id', $id)->first();
+        if (!$asset) return ApiResponse::error('Asset tidak ditemukan.', null, 404);
+        $hasAssignment = DB::table('andalan_asset_assignments')->where('asset_id', $id)->whereIn('status', ['assigned', 'requested'])->exists();
+        if ($hasAssignment) return ApiResponse::error('Asset masih memiliki assignment aktif.', null, 409);
+        DB::table('andalan_assets')->where('id', $id)->delete();
+        return ApiResponse::success('Asset berhasil dihapus.');
+    }
+
     public function scanSuperAdminAsset(string $user, string $assetCode): JsonResponse
     {
         if (!$this->superAdminAccount($user)) {

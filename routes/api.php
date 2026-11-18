@@ -170,6 +170,7 @@ Route::prefix('presentation/andalan/workforce')->group(function () {
     Route::put('/assets/{id}', [AndalanWorkforceController::class, 'updateAsset'])->whereNumber('id');
     Route::get('/super-admin/assets/{user}', [AndalanWorkforceController::class, 'superAdminAssets']);
     Route::post('/super-admin/assets', [AndalanWorkforceController::class, 'createSuperAdminAsset']);
+    Route::delete('/super-admin/assets/{id}', [AndalanWorkforceController::class, 'deleteSuperAdminAsset'])->whereNumber('id');
     Route::get('/super-admin/assets/{user}/scan/{assetCode}', [AndalanWorkforceController::class, 'scanSuperAdminAsset']);
     Route::get('/admin/{user}/payroll', [AndalanWorkforceController::class, 'adminPayroll']);
     Route::get('/admin/{user}/training', [AndalanWorkforceController::class, 'adminTraining']);
