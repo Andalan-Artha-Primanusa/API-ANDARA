@@ -331,6 +331,20 @@ class AndalanWorkforceController extends Controller
         return ApiResponse::success('Assignment asset berhasil dibuat', DB::table('andalan_asset_assignments')->find($id), 201);
     }
 
+    public function transferSuperAdminAsset(Request $request, int $assetId): JsonResponse
+    {
+        $data = $request->validate(['user_id' => ['required', 'string'], 'target_user_id' => ['required', 'string'], 'notes' => ['nullable', 'string', 'max:2000']]);
+        if (!$this->superAdminAccount($data['user_id'])) return ApiResponse::error('Akses khusus Super Admin.', null, 403);
+        $identity = $this->identity($data['target_user_id']);
+        $asset = DB::table('andalan_assets')->where('id', $assetId)->first();
+        if (!$asset || !$identity) return ApiResponse::error('Asset atau target user tidak ditemukan.', null, 404);
+        DB::transaction(function () use ($assetId, $identity, $data) {
+            DB::table('andalan_asset_assignments')->where('asset_id', $assetId)->whereIn('status', ['assigned', 'requested'])->update(['status' => 'returned', 'updated_at' => now()]);
+            DB::table('andalan_asset_assignments')->insert(['asset_id' => $assetId, 'employee_id' => $identity['employee_id'], 'salary_number' => $identity['salary_number'], 'employee_name' => $identity['employee_name'], 'status' => 'requested', 'notes' => $data['notes'] ?? null, 'created_at' => now(), 'updated_at' => now()]);
+        });
+        return ApiResponse::success('Asset berhasil dipindahkan dan menunggu approval.');
+    }
+
     public function scanSuperAdminAsset(string $user, string $assetCode): JsonResponse
     {
         if (!$this->superAdminAccount($user)) {
